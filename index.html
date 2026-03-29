@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Kelime Pratik">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0f172a">
+<script>
+const manifest={name:"Kelime Pratik",short_name:"KelimePratik",start_url:"./kelime_pratik.html",display:"standalone",background_color:"#0f172a",theme_color:"#0f172a",icons:[{src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230f172a'/><text x='50' y='55' text-anchor='middle' dominant-baseline='middle' font-size='50'>📚</text></svg>",sizes:"512x512",type:"image/svg+xml",purpose:"any"}]};
+const b=new Blob([JSON.stringify(manifest)],{type:'application/json'});const l=document.createElement('link');l.rel='manifest';l.href=URL.createObjectURL(b);document.head.appendChild(l);
+</script>
+<title>Kelime Pratik</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --surface2: #334155;
+  --accent: #10b981;
+  --accent2: #059669;
+  --text: #f1f5f9;
+  --dim: #94a3b8;
+  --border: #334155;
+  --danger: #f43f5e;
+  --success: #10b981;
+  --star: #f59e0b;
+  --bubble-in: #1e293b;
+  --bubble-out: #065f46;
+  --glow: rgba(16,185,129,0.15);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);height:100dvh;display:flex;flex-direction:column;overflow:hidden;-webkit-user-select:none;user-select:none}
+
+/* HEADER */
+.header{background:linear-gradient(135deg,#1e293b 0%,#0f172a 100%);padding:12px 18px;padding-top:max(12px,env(safe-area-inset-top));display:flex;align-items:center;gap:14px;min-height:60px;z-index:10;border-bottom:1px solid rgba(255,255,255,0.06)}
+.header-avatar{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,var(--accent),#06b6d4);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff;flex-shrink:0;box-shadow:0 4px 12px rgba(16,185,129,0.3)}
+.header-info{flex:1}
+.header-title{font-size:16px;font-weight:700;letter-spacing:-0.3px}
+.header-subtitle{font-size:11px;color:var(--dim);font-weight:500;line-height:1.4}
+.btn-icon{background:none;border:none;color:var(--dim);width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all 0.2s}
+.btn-icon:active{background:rgba(255,255,255,0.08)}
+
+/* SCORE */
+.score-bar{background:var(--surface);padding:8px 18px;display:flex;align-items:center;justify-content:center;gap:24px;font-size:13px;font-weight:600;border-bottom:1px solid rgba(255,255,255,0.04)}
+.score-item{display:flex;align-items:center;gap:6px}
+.score-dot{width:8px;height:8px;border-radius:50%}
+.score-dot.correct{background:var(--success);box-shadow:0 0 6px rgba(16,185,129,0.5)}
+.score-dot.wrong{background:var(--danger);box-shadow:0 0 6px rgba(244,63,94,0.5)}
+.score-dot.total{background:var(--accent)}
+
+/* CHAT */
+.chat-area{flex:1;overflow-y:auto;padding:14px 18px;display:flex;flex-direction:column;gap:6px;background:var(--bg)}
+.chat-area::-webkit-scrollbar{width:4px}
+.chat-area::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px}
+
+.msg-row{display:flex;animation:msgIn 0.35s cubic-bezier(0.16,1,0.3,1)}
+@keyframes msgIn{from{opacity:0;transform:translateY(12px) scale(0.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.msg-row.incoming{justify-content:flex-start}
+.msg-row.outgoing{justify-content:flex-end}
+.bubble{max-width:78%;padding:10px 14px;border-radius:16px;font-size:14px;line-height:1.5;position:relative;word-break:break-word}
+.msg-row.incoming .bubble{background:var(--bubble-in);border-bottom-left-radius:4px;border:1px solid rgba(255,255,255,0.04)}
+.msg-row.outgoing .bubble{background:var(--bubble-out);border-bottom-right-radius:4px}
+.bubble .time{font-size:10px;color:rgba(255,255,255,0.35);float:right;margin-left:10px;margin-top:5px}
+.bubble.correct-answer{border:1.5px solid var(--success);box-shadow:0 0 12px rgba(16,185,129,0.15)}
+.bubble.wrong-answer{border:1.5px solid var(--danger);box-shadow:0 0 12px rgba(244,63,94,0.15)}
+.feedback{font-size:12px;margin-top:5px;font-weight:700}
+.feedback.correct{color:var(--success)}
+.feedback.wrong{color:var(--danger)}
+.system-msg{text-align:center;padding:8px 0}
+.system-msg span{background:rgba(255,255,255,0.05);color:var(--dim);font-size:11px;padding:5px 16px;border-radius:20px;font-weight:600}
+
+/* INPUT */
+.input-display{background:var(--bg);padding:10px 12px;display:flex;align-items:center;gap:10px;border-top:1px solid rgba(255,255,255,0.04)}
+.input-text-wrap{flex:1;background:var(--surface);border-radius:24px;padding:11px 18px;min-height:44px;display:flex;align-items:center;border:1px solid rgba(255,255,255,0.04)}
+.input-text{flex:1;font-family:'Inter',sans-serif;font-size:15px;color:var(--text);min-height:20px;word-break:break-all;font-weight:500}
+.input-text.empty::before{content:'Cevabını yaz...';color:var(--dim);font-weight:400}
+.cursor-blink{display:inline-block;width:2px;height:18px;background:var(--accent);margin-left:1px;animation:blink 1s infinite;vertical-align:text-bottom;border-radius:1px}
+@keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0}}
+.send-btn{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#06b6d4);border:none;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:transform 0.15s;box-shadow:0 4px 12px rgba(16,185,129,0.3)}
+.send-btn:active{transform:scale(0.9)}
+
+/* KEYBOARD */
+.keyboard{background:#131c2e;padding:8px 6px 12px;padding-bottom:max(12px,env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:7px;border-top:1px solid rgba(255,255,255,0.06)}
+.kb-row{display:flex;justify-content:center;gap:5px}
+.kb-key{height:44px;min-width:30px;border:none;border-radius:8px;background:var(--surface);color:var(--text);font-family:'Inter',sans-serif;font-size:16px;font-weight:600;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:1;max-width:44px;transition:all 0.1s;-webkit-tap-highlight-color:transparent;box-shadow:0 1px 3px rgba(0,0,0,0.3)}
+.kb-key:active{background:var(--surface2);transform:scale(0.94)}
+.kb-key.special{background:#1a2540;font-size:14px;max-width:56px;flex:1.4}
+.kb-key.special:active{background:var(--surface)}
+.kb-key.space{flex:5;max-width:none;font-size:12px;color:var(--dim);font-weight:500;letter-spacing:1px}
+.kb-key.send-key{background:linear-gradient(135deg,var(--accent),#06b6d4);color:#fff;flex:1.8;max-width:72px;font-size:12px;font-weight:800;letter-spacing:0.5px;box-shadow:0 2px 10px rgba(16,185,129,0.3)}
+.kb-key.send-key:active{opacity:0.85}
+.kb-tr-row{display:flex;justify-content:center;gap:5px;padding:0 16px}
+.kb-tr-row .kb-key{background:linear-gradient(135deg,#065f46,#047857);font-size:15px;max-width:50px;box-shadow:0 2px 8px rgba(5,150,105,0.25)}
+.kb-tr-row .kb-key:active{opacity:0.8}
+
+/* OVERLAYS */
+.overlay{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:100;padding:0;animation:fadeIn 0.25s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.card{background:var(--bg);border-radius:0;padding:24px 20px;width:100%;height:100%;overflow-y:auto;display:flex;flex-direction:column}
+.card::-webkit-scrollbar{width:4px}
+.card::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px}
+.card h2{font-size:24px;margin-bottom:6px;color:var(--text);text-align:center;font-weight:800;letter-spacing:-0.5px}
+.card h2 .emoji{font-size:28px;vertical-align:middle;margin-right:6px}
+.card .sub{font-size:13px;color:var(--dim);text-align:center;margin-bottom:24px;font-weight:500}
+
+.format-box{background:var(--surface);border-radius:14px;padding:16px 18px;margin-bottom:16px;border:1px solid rgba(255,255,255,0.04)}
+.format-box .title{font-size:13px;font-weight:700;color:var(--accent);margin-bottom:8px}
+.format-box code{display:block;font-size:12px;color:var(--dim);line-height:1.7;white-space:pre-wrap;font-family:'SF Mono','Courier New',monospace}
+
+.upload-area textarea{width:100%;min-height:140px;max-height:220px;background:var(--surface);border:2px solid var(--border);border-radius:16px;padding:14px 16px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;line-height:1.6;resize:vertical;outline:none;transition:border-color 0.3s;-webkit-user-select:text;user-select:text}
+.upload-area textarea:focus{border-color:var(--accent)}
+.upload-area textarea::placeholder{color:var(--dim)}
+.word-count{text-align:right;font-size:11px;color:var(--dim);margin-top:6px;font-weight:600}
+
+.upload-btn{width:100%;padding:16px;border-radius:16px;border:none;background:linear-gradient(135deg,var(--accent),#06b6d4);color:#fff;font-family:'Inter',sans-serif;font-size:15px;font-weight:700;cursor:pointer;margin-top:16px;transition:all 0.2s;box-shadow:0 4px 16px rgba(16,185,129,0.25);letter-spacing:-0.3px}
+.upload-btn:active{transform:scale(0.98);opacity:0.9}
+.error-msg{color:var(--danger);font-size:12px;font-weight:600;text-align:center;margin-top:8px;min-height:18px}
+
+/* SAVED */
+.saved-section{margin-bottom:20px}
+.saved-section h3{font-size:15px;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px;font-weight:700}
+.saved-section h3 span{font-size:11px;color:var(--dim);font-weight:400}
+.saved-list{display:flex;flex-direction:column;gap:8px}
+.saved-item{display:flex;align-items:center;gap:12px;background:var(--surface);border-radius:14px;padding:14px 16px;border:2px solid transparent;transition:all 0.2s;cursor:pointer}
+.saved-item.selected{border-color:var(--accent);background:rgba(16,185,129,0.08);box-shadow:0 0 16px rgba(16,185,129,0.1)}
+.saved-item-check{width:24px;height:24px;border-radius:8px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:700;transition:all 0.2s;color:#fff}
+.saved-item.selected .saved-item-check{background:var(--accent);border-color:var(--accent)}
+.saved-item-info{flex:1}
+.saved-item-name{font-size:14px;font-weight:700;letter-spacing:-0.2px}
+.saved-item-count{font-size:11px;color:var(--dim);font-weight:500;margin-top:1px}
+.saved-item-del{width:34px;height:34px;border:none;border-radius:10px;background:rgba(244,63,94,0.1);color:var(--danger);font-size:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all 0.2s}
+.saved-item-del:active{background:rgba(244,63,94,0.25);transform:scale(0.92)}
+.saved-empty{text-align:center;color:var(--dim);font-size:12px;padding:16px;font-weight:500}
+.play-selected-btn{width:100%;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--accent),#06b6d4);color:#fff;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-top:12px;transition:all 0.2s;display:none;box-shadow:0 4px 16px rgba(16,185,129,0.25);letter-spacing:-0.2px}
+.play-selected-btn:active{transform:scale(0.98)}
+
+.starred-play-btn{width:100%;padding:14px;border-radius:14px;border:2px solid var(--star);background:rgba(245,158,11,0.08);color:var(--star);font-family:'Inter',sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:16px;transition:all 0.2s;box-shadow:0 4px 16px rgba(245,158,11,0.1)}
+.starred-play-btn:active{background:rgba(245,158,11,0.2);transform:scale(0.98)}
+
+.io-buttons{display:flex;gap:8px;margin-top:14px}
+.io-btn{flex:1;padding:12px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--dim);font-family:'Inter',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s;text-align:center}
+.io-btn:active{border-color:var(--accent);color:var(--text);background:rgba(16,185,129,0.08)}
+.divider{border:none;border-top:1px solid rgba(255,255,255,0.06);margin:20px 0}
+
+.save-row{display:flex;gap:8px;margin-top:12px}
+.save-input{flex:1;background:var(--surface);border:2px solid var(--border);border-radius:14px;padding:12px 16px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;outline:none;-webkit-user-select:text;user-select:text;font-weight:500}
+.save-input:focus{border-color:var(--accent)}
+.save-input::placeholder{color:var(--dim)}
+.save-btn{padding:12px 20px;border-radius:14px;border:none;background:var(--accent);color:#fff;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap}
+.save-btn:active{opacity:0.85}
+.save-msg{font-size:12px;color:var(--success);text-align:center;margin-top:6px;min-height:18px;font-weight:600}
+
+/* MODE */
+.mode-options{display:flex;flex-direction:column;gap:10px}
+.mode-btn{padding:16px 18px;border-radius:16px;border:2px solid var(--border);background:var(--surface);color:var(--text);font-family:'Inter',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all 0.25s;display:flex;align-items:center;gap:14px}
+.mode-btn:active{border-color:var(--accent);background:rgba(16,185,129,0.08);transform:scale(0.98)}
+.mode-btn .icon{font-size:24px}
+.mode-btn .label{text-align:left;letter-spacing:-0.2px}
+.mode-btn .label small{display:block;font-size:11px;color:var(--dim);font-weight:500;margin-top:2px}
+.back-link{display:block;text-align:center;margin-top:20px;color:var(--dim);font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;transition:color 0.2s}
+.back-link:active{color:var(--text)}
+
+/* RESULT */
+.result-card{text-align:center;justify-content:center}
+.result-card .emoji{font-size:56px;margin-bottom:16px}
+.result-card h2{font-size:26px;margin-bottom:8px}
+.result-stats{display:flex;justify-content:center;gap:28px;margin:24px 0}
+.stat-box{text-align:center}
+.stat-box .num{font-size:32px;font-weight:800}
+.stat-box .lbl{font-size:11px;color:var(--dim);font-weight:600;margin-top:2px}
+.result-actions{display:flex;flex-direction:column;gap:10px;margin-top:24px;max-width:340px;margin-left:auto;margin-right:auto;width:100%}
+.result-btn{padding:14px;border-radius:14px;border:none;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:-0.2px}
+.result-btn.primary{background:linear-gradient(135deg,var(--accent),#06b6d4);color:#fff;box-shadow:0 4px 16px rgba(16,185,129,0.25)}
+.result-btn.secondary{background:var(--surface);color:var(--text);border:1px solid rgba(255,255,255,0.06)}
+.result-btn:active{transform:scale(0.98);opacity:0.9}
+
+/* REVIEW */
+.review-card{max-height:100%;display:flex;flex-direction:column}
+.review-card h2{flex-shrink:0}
+.review-tabs{display:flex;gap:8px;margin-bottom:14px;flex-shrink:0}
+.review-tab{flex:1;padding:12px;border-radius:12px;border:none;background:var(--surface);color:var(--dim);font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s}
+.review-tab.active{background:var(--accent);color:#fff;box-shadow:0 4px 12px rgba(16,185,129,0.25)}
+.review-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;max-height:60vh}
+.review-list::-webkit-scrollbar{width:4px}
+.review-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px}
+.review-item{background:var(--surface);border-radius:14px;padding:12px 14px;border-left:3px solid var(--danger);display:flex;align-items:flex-start;gap:10px}
+.review-item.correct-item{border-left-color:var(--success)}
+.ri-content{flex:1}
+.ri-content .ri-question{font-size:12px;color:var(--dim);margin-bottom:4px;font-weight:500}
+.ri-content .ri-answer{font-size:14px;font-weight:700;color:var(--text)}
+.ri-content .ri-user{font-size:12px;color:var(--danger);margin-top:4px;font-weight:600}
+.review-item.correct-item .ri-user{color:var(--success)}
+.star-btn{background:none;border:none;font-size:22px;cursor:pointer;padding:2px;flex-shrink:0;transition:transform 0.15s;-webkit-tap-highlight-color:transparent}
+.star-btn:active{transform:scale(1.3)}
+.review-empty{text-align:center;padding:40px 20px;color:var(--dim);font-size:13px;font-weight:500;line-height:1.6}
+
+.hidden{display:none !important}
+</style>
+</head>
+<body>
+
+<!-- 1) UPLOAD -->
+<div class="overlay" id="uploadScreen">
+<div class="card">
+<h2><span class="emoji">📚</span>Kelime Pratik</h2>
+<p class="sub">Kayıtlı listeden seç veya yeni yapıştır</p>
+<button class="starred-play-btn hidden" id="starredPlayBtn" onclick="showStarredList()">⭐ Yıldızlıları Çalış (<span id="starredCount">0</span> kelime)</button>
+<div class="saved-section" id="savedSection">
+<h3>💾 Kayıtlı Listeler <span>(birden fazla seç)</span></h3>
+<div class="saved-list" id="savedList"></div>
+<button class="play-selected-btn" id="playSelectedBtn" onclick="playSelectedLists()">▶ Seçilenleri Çalış</button>
+<div class="io-buttons">
+<button class="io-btn" onclick="exportAllLists()">📤 Dışa Aktar</button>
+<button class="io-btn" onclick="document.getElementById('importFile').click()">📥 İçe Aktar</button>
+<input type="file" id="importFile" accept=".json" style="display:none" onchange="importLists(event)">
+</div>
+</div>
+<hr class="divider">
+<div class="format-box">
+<div class="title">📋 Yeni liste yapıştır</div>
+<code>İngilizce - Türkçe
+İngilizce - Türkçe</code>
+</div>
+<div class="upload-area">
+<textarea id="bulkInput" placeholder="Kelimeleri buraya yapıştır...&#10;&#10;Örn: Abandon - Terk etmek / Bırakıp gitmek"></textarea>
+<div class="word-count" id="wordCount">0 kelime algılandı</div>
+</div>
+<div class="error-msg" id="errorMsg"></div>
+<button class="upload-btn" onclick="parseAndContinue()">Yükle ve Devam Et →</button>
+</div>
+</div>
+
+<!-- 2) MODE SELECT -->
+<div class="overlay hidden" id="modeScreen">
+<div class="card" style="justify-content:center">
+<h2>🎯 Mod Seç</h2>
+<p class="sub" id="modeWordCount">0 kelime yüklendi</p>
+<div id="saveArea" class="hidden">
+<div class="save-row"><input type="text" class="save-input" id="saveNameInput" placeholder="Liste adı gir..." maxlength="30"><button class="save-btn" onclick="saveCurrentList()">💾 Kaydet</button></div>
+<div class="save-msg" id="saveMsg"></div>
+</div>
+<div class="mode-options" style="margin-top:16px">
+<button class="mode-btn" onclick="startGame('tr2en')"><span class="icon">🇹🇷➜🇬🇧</span><span class="label">Türkçe → İngilizce<small>Türkçe sorulur, İngilizce yaz</small></span></button>
+<button class="mode-btn" onclick="startGame('en2tr')"><span class="icon">🇬🇧➜🇹🇷</span><span class="label">İngilizce → Türkçe<small>İngilizce sorulur, Türkçe yaz</small></span></button>
+<button class="mode-btn" onclick="startGame('mix')"><span class="icon">🔀</span><span class="label">Karışık<small>Rastgele her iki yönde sorulur</small></span></button>
+</div>
+<a class="back-link" onclick="showUpload()">← Kelimeleri değiştir</a>
+</div>
+</div>
+
+<!-- 3) RESULT -->
+<div class="overlay hidden" id="resultScreen">
+<div class="card result-card">
+<div class="emoji" id="resultEmoji">🎉</div>
+<h2 id="resultTitle">Tebrikler!</h2>
+<div class="result-stats">
+<div class="stat-box"><div class="num" style="color:var(--success)" id="rCorrect">0</div><div class="lbl">Doğru</div></div>
+<div class="stat-box"><div class="num" style="color:var(--danger)" id="rWrong">0</div><div class="lbl">Yanlış</div></div>
+<div class="stat-box"><div class="num" style="color:var(--accent)" id="rPercent">0%</div><div class="lbl">Başarı</div></div>
+</div>
+<div class="result-actions">
+<button class="result-btn primary" onclick="showReview()">📋 Kelimeleri Gör</button>
+<button class="result-btn primary" id="retryWrongBtn" onclick="retryWrongWords()" style="background:linear-gradient(135deg,var(--danger),#e11d48)">🔄 Yanlışları Tekrar Oyna</button>
+<button class="result-btn secondary" onclick="restartGame()">Tekrar Oyna</button>
+<button class="result-btn secondary" onclick="showModeSelect()">Mod Değiştir</button>
+<button class="result-btn secondary" onclick="showUpload()">🏠 Ana Sayfaya Dön</button>
+</div>
+</div>
+</div>
+
+<!-- 4) REVIEW -->
+<div class="overlay hidden" id="reviewScreen">
+<div class="card review-card">
+<h2>📋 Kelime Özeti</h2>
+<div class="review-tabs">
+<button class="review-tab active" id="tabWrong" onclick="switchTab('wrong')">❌ Yanlışlar (<span id="tabWrongCount">0</span>)</button>
+<button class="review-tab" id="tabCorrect" onclick="switchTab('correct')">✅ Doğrular (<span id="tabCorrectCount">0</span>)</button>
+</div>
+<div class="review-list" id="reviewList"></div>
+<a class="back-link" onclick="hideReview()">← Sonuçlara dön</a>
+</div>
+</div>
+
+<!-- 5) STARRED -->
+<div class="overlay hidden" id="starredScreen">
+<div class="card review-card">
+<h2>⭐ Yıldızlı Kelimeler</h2>
+<button class="play-selected-btn" id="starredScreenPlayBtn" onclick="playFromStarredScreen()" style="display:block;margin-bottom:14px">▶ Çalış</button>
+<div class="review-list" id="starredWordList" style="max-height:60vh"></div>
+<a class="back-link" onclick="hideStarredList()">← Ana sayfaya dön</a>
+</div>
+</div>
+
+<!-- MAIN -->
+<div class="header">
+<div class="header-avatar">KP</div>
+<div class="header-info"><div class="header-title">Kelime Pratik</div><div class="header-subtitle" id="headerSub">Kelime yükle ve başla</div></div>
+<div><button class="btn-icon" onclick="showModeSelect()" title="Ayarlar">⚙️</button></div>
+</div>
+<div class="score-bar">
+<div class="score-item"><div class="score-dot correct"></div><span id="sCorrect">0</span></div>
+<div class="score-item"><div class="score-dot wrong"></div><span id="sWrong">0</span></div>
+<div class="score-item"><div class="score-dot total"></div><span id="sRemain">0</span> kaldı</div>
+</div>
+<div class="chat-area" id="chatArea"></div>
+<div class="input-display">
+<div class="input-text-wrap"><div class="input-text empty" id="inputDisplay"><span class="cursor-blink"></span></div></div>
+<button class="send-btn" ontouchstart="event.preventDefault();submitAnswer()" onmousedown="event.preventDefault();submitAnswer()">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+</button>
+</div>
+<div class="keyboard" id="keyboard">
+<div class="kb-tr-row hidden" id="trRow">
+<button class="kb-key" data-char="ş">ş</button><button class="kb-key" data-char="ğ">ğ</button><button class="kb-key" data-char="ü">ü</button><button class="kb-key" data-char="ö">ö</button><button class="kb-key" data-char="ç">ç</button><button class="kb-key" data-char="ı">ı</button>
+</div>
+<div class="kb-row"><button class="kb-key" data-char="q">q</button><button class="kb-key" data-char="w">w</button><button class="kb-key" data-char="e">e</button><button class="kb-key" data-char="r">r</button><button class="kb-key" data-char="t">t</button><button class="kb-key" data-char="y">y</button><button class="kb-key" data-char="u">u</button><button class="kb-key" data-char="i">i</button><button class="kb-key" data-char="o">o</button><button class="kb-key" data-char="p">p</button></div>
+<div class="kb-row"><button class="kb-key" data-char="a">a</button><button class="kb-key" data-char="s">s</button><button class="kb-key" data-char="d">d</button><button class="kb-key" data-char="f">f</button><button class="kb-key" data-char="g">g</button><button class="kb-key" data-char="h">h</button><button class="kb-key" data-char="j">j</button><button class="kb-key" data-char="k">k</button><button class="kb-key" data-char="l">l</button></div>
+<div class="kb-row"><button class="kb-key special" id="capsKey" data-action="caps">⇧</button><button class="kb-key" data-char="z">z</button><button class="kb-key" data-char="x">x</button><button class="kb-key" data-char="c">c</button><button class="kb-key" data-char="v">v</button><button class="kb-key" data-char="b">b</button><button class="kb-key" data-char="n">n</button><button class="kb-key" data-char="m">m</button><button class="kb-key special" data-action="backspace">⌫</button></div>
+<div class="kb-row"><button class="kb-key space" data-action="space">boşluk</button><button class="kb-key send-key" data-action="send">GÖNDER</button></div>
+</div>
+
+<script>
+let WORDS=[],mode='mix',queue=[],current=null,correct=0,wrong=0,total=0,currentDir='',correctList=[],wrongList=[],inputText='',capsOn=false,loadedFromSaved=false,selectedName='';
+const chatArea=document.getElementById('chatArea'),inputDisplay=document.getElementById('inputDisplay'),bulkInput=document.getElementById('bulkInput'),trRow=document.getElementById('trRow'),capsKey=document.getElementById('capsKey');
+
+// STORAGE
+let selectedListIndexes=[];
+function getStarredWords(){try{const d=localStorage.getItem('kp_starred');return d?JSON.parse(d):[];}catch(e){return[];}}
+function setStarredWords(s){try{localStorage.setItem('kp_starred',JSON.stringify(s));}catch(e){}}
+function isStarred(w){return getStarredWords().some(s=>s.en===w.en&&s.tr===w.tr)}
+function toggleStar(en,tr){let s=getStarredWords();const i=s.findIndex(x=>x.en===en&&x.tr===tr);if(i>=0)s.splice(i,1);else s.push({en,tr});setStarredWords(s);updateStarredBtn();return i<0;}
+function updateStarredBtn(){const s=getStarredWords(),btn=document.getElementById('starredPlayBtn'),c=document.getElementById('starredCount');if(s.length>0){btn.classList.remove('hidden');c.textContent=s.length;}else btn.classList.add('hidden');}
+function playStarredWords(){const s=getStarredWords();if(s.length<2){alert('En az 2 yıldızlı kelime gerekli.');return;}WORDS=[...s];loadedFromSaved=true;selectedName='⭐ Yıldızlılar';document.getElementById('modeWordCount').textContent=WORDS.length+' yıldızlı kelime';document.getElementById('saveArea').classList.add('hidden');showModeSelect();}
+function showStarredList(){const s=getStarredWords(),o=document.getElementById('starredScreen'),l=document.getElementById('starredWordList'),p=document.getElementById('starredScreenPlayBtn');if(!s.length){l.innerHTML='<div class="review-empty">Henüz yıldızlı kelime yok.<br>Oyun bitince kelime özetinden yıldızlayabilirsin ⭐</div>';p.classList.add('hidden');}else{p.classList.remove('hidden');p.textContent='▶ '+s.length+' Kelimeyi Çalış';if(s.length<2)p.classList.add('hidden');l.innerHTML=s.map((w,i)=>`<div class="review-item" style="border-left-color:var(--star)"><button class="star-btn" onclick="removeStarFromList(${i})">⭐</button><div class="ri-content"><div class="ri-answer">${w.en}</div><div class="ri-question">${w.tr}</div></div></div>`).join('');}o.classList.remove('hidden');document.getElementById('uploadScreen').classList.add('hidden');}
+function hideStarredList(){document.getElementById('starredScreen').classList.add('hidden');showUpload();}
+function removeStarFromList(i){let s=getStarredWords();s.splice(i,1);setStarredWords(s);showStarredList();}
+function playFromStarredScreen(){document.getElementById('starredScreen').classList.add('hidden');playStarredWords();}
+function getSavedLists(){try{const d=localStorage.getItem('kp_lists');return d?JSON.parse(d):[];}catch(e){return[];}}
+function setSavedLists(l){try{localStorage.setItem('kp_lists',JSON.stringify(l));}catch(e){}}
+function renderSavedLists(){const ls=getSavedLists(),c=document.getElementById('savedList');selectedListIndexes=[];updatePlayBtn();if(!ls.length){c.innerHTML='<div class="saved-empty">Henüz kayıtlı liste yok</div>';return;}c.innerHTML=ls.map((item,i)=>`<div class="saved-item" id="savedItem${i}" onclick="toggleSavedList(${i})"><div class="saved-item-check" id="savedCheck${i}"></div><div class="saved-item-info"><div class="saved-item-name">📄 ${item.name}</div><div class="saved-item-count">${item.words.length} kelime</div></div><button class="saved-item-del" onclick="event.stopPropagation();deleteSavedList(${i})">🗑</button></div>`).join('');}
+function toggleSavedList(i){const p=selectedListIndexes.indexOf(i);if(p>=0)selectedListIndexes.splice(p,1);else selectedListIndexes.push(i);getSavedLists().forEach((_,j)=>{const el=document.getElementById('savedItem'+j),ch=document.getElementById('savedCheck'+j);if(selectedListIndexes.includes(j)){el.classList.add('selected');ch.textContent='✓';}else{el.classList.remove('selected');ch.textContent='';}});updatePlayBtn();}
+function updatePlayBtn(){const btn=document.getElementById('playSelectedBtn');if(!btn)return;if(!selectedListIndexes.length){btn.style.display='none';}else{btn.style.display='block';const ls=getSavedLists(),tw=selectedListIndexes.reduce((s,i)=>s+(ls[i]?ls[i].words.length:0),0);btn.textContent='▶ Seçilenleri Çalış ('+selectedListIndexes.length+' liste, '+tw+' kelime)';}}
+function playSelectedLists(){if(!selectedListIndexes.length)return;const ls=getSavedLists();let m=[],n=[];selectedListIndexes.sort((a,b)=>a-b).forEach(i=>{if(ls[i]){m=m.concat(ls[i].words);n.push(ls[i].name);}});if(!m.length)return;WORDS=m;loadedFromSaved=true;selectedName=n.join(' + ');document.getElementById('modeWordCount').textContent=WORDS.length+' kelime — '+selectedName;document.getElementById('saveArea').classList.add('hidden');showModeSelect();}
+function loadSavedList(i){const ls=getSavedLists();if(!ls[i])return;WORDS=ls[i].words;loadedFromSaved=true;selectedName=ls[i].name;document.getElementById('modeWordCount').textContent=WORDS.length+' kelime — '+selectedName;document.getElementById('saveArea').classList.add('hidden');showModeSelect();}
+function deleteSavedList(i){const ls=getSavedLists();if(!ls[i])return;if(confirm('"'+ls[i].name+'" silinsin mi?')){ls.splice(i,1);setSavedLists(ls);renderSavedLists();}}
+function saveCurrentList(){const n=document.getElementById('saveNameInput').value.trim();if(!n){document.getElementById('saveMsg').textContent='Liste adı gir!';document.getElementById('saveMsg').style.color='var(--danger)';return;}if(!WORDS.length)return;const ls=getSavedLists(),e=ls.findIndex(l=>l.name===n);if(e>=0)ls[e].words=[...WORDS];else ls.push({name:n,words:[...WORDS]});setSavedLists(ls);document.getElementById('saveMsg').textContent='✓ "'+n+'" kaydedildi!';document.getElementById('saveMsg').style.color='var(--success)';document.getElementById('saveNameInput').value='';loadedFromSaved=true;}
+function exportAllLists(){const ls=getSavedLists();if(!ls.length){alert('Kayıtlı liste yok!');return;}const d={version:1,exportDate:new Date().toISOString(),lists:ls};const j=JSON.stringify(d,null,2);const bl=new Blob([j],{type:'application/json'});const u=URL.createObjectURL(bl);const a=document.createElement('a');a.href=u;a.download='kelime_pratik_yedek_'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(u);}
+function importLists(ev){const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=function(e){try{const d=JSON.parse(e.target.result);if(!d.lists||!Array.isArray(d.lists)){alert('Geçersiz dosya!');return;}const imp=d.lists.filter(l=>l.name&&l.words&&Array.isArray(l.words));if(!imp.length){alert('Geçerli liste bulunamadı!');return;}const cur=getSavedLists();let a=0,u=0;for(const i of imp){const e=cur.findIndex(l=>l.name===i.name);if(e>=0){cur[e].words=i.words;u++;}else{cur.push({name:i.name,words:i.words});a++;}}setSavedLists(cur);renderSavedLists();alert('✅ '+a+' yeni, '+u+' güncellenen liste');}catch(err){alert('Dosya okunamadı!');}};r.readAsText(f);ev.target.value='';}
+
+// KEYBOARD
+function updateInputDisplay(){if(!inputText.length){inputDisplay.className='input-text empty';inputDisplay.innerHTML='<span class="cursor-blink"></span>';}else{inputDisplay.className='input-text';inputDisplay.innerHTML=inputText+'<span class="cursor-blink"></span>';}}
+function typeChar(ch){if(capsOn){ch=ch.toUpperCase();capsOn=false;capsKey.style.background='';}inputText+=ch;updateInputDisplay();chatArea.scrollTop=chatArea.scrollHeight;}
+function doBackspace(){if(inputText.length>0){inputText=inputText.slice(0,-1);updateInputDisplay();}}
+function toggleCaps(){capsOn=!capsOn;capsKey.style.background=capsOn?'var(--accent)':'';}
+function updateKeyboardForDirection(){if(currentDir==='en2tr')trRow.classList.remove('hidden');else trRow.classList.add('hidden');}
+document.getElementById('keyboard').addEventListener('touchstart',function(e){e.preventDefault();const btn=e.target.closest('.kb-key');if(!btn)return;const ch=btn.dataset.char,ac=btn.dataset.action;if(ch)typeChar(ch);else if(ac==='backspace')doBackspace();else if(ac==='space')typeChar(' ');else if(ac==='caps')toggleCaps();else if(ac==='send')submitAnswer();},{passive:false});
+document.getElementById('keyboard').addEventListener('mousedown',function(e){e.preventDefault();const btn=e.target.closest('.kb-key');if(!btn)return;const ch=btn.dataset.char,ac=btn.dataset.action;if(ch)typeChar(ch);else if(ac==='backspace')doBackspace();else if(ac==='space')typeChar(' ');else if(ac==='caps')toggleCaps();else if(ac==='send')submitAnswer();});
+let bsInt=null;document.querySelector('[data-action="backspace"]').addEventListener('touchstart',function(){bsInt=setInterval(doBackspace,120);},{passive:true});document.querySelector('[data-action="backspace"]').addEventListener('touchend',function(){clearInterval(bsInt);});
+
+// UPLOAD
+bulkInput.addEventListener('input',()=>{document.getElementById('wordCount').textContent=countParsedLines(bulkInput.value)+' kelime algılandı';});
+function countParsedLines(t){return t.split('\n').filter(l=>{const x=l.trim();if(!x)return false;const s=x.includes(' - ')?' - ':x.includes(' – ')?' – ':null;return s&&x.split(s).length>=2;}).length;}
+function parseAndContinue(){const t=bulkInput.value.trim();if(!t){document.getElementById('errorMsg').textContent='Kelime alanı boş!';return;}const ls=t.split('\n'),p=[];for(const l of ls){const x=l.trim();if(!x)continue;const s=x.includes(' - ')?' - ':x.includes(' – ')?' – ':null;if(!s)continue;const pts=x.split(s);if(pts.length<2)continue;const en=pts[0].trim(),tr=pts.slice(1).join(s).trim();if(en&&tr)p.push({en,tr});}if(p.length<2){document.getElementById('errorMsg').textContent='En az 2 kelime gerekli.';return;}WORDS=p;loadedFromSaved=false;selectedName='Yeni liste';document.getElementById('errorMsg').textContent='';document.getElementById('modeWordCount').textContent=WORDS.length+' kelime yüklendi';document.getElementById('saveArea').classList.remove('hidden');document.getElementById('saveMsg').textContent='';document.getElementById('saveNameInput').value='';showModeSelect();}
+function showUpload(){renderSavedLists();updateStarredBtn();['uploadScreen'].forEach(id=>document.getElementById(id).classList.remove('hidden'));['modeScreen','resultScreen','reviewScreen','starredScreen'].forEach(id=>document.getElementById(id).classList.add('hidden'));}
+function showModeSelect(){if(WORDS.length<2){showUpload();return;}['modeScreen'].forEach(id=>document.getElementById(id).classList.remove('hidden'));['uploadScreen','resultScreen','reviewScreen','starredScreen'].forEach(id=>document.getElementById(id).classList.add('hidden'));if(loadedFromSaved)document.getElementById('saveArea').classList.add('hidden');}
+
+// GAME
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function normalize(s){return s.toLowerCase().replace(/İ/gi,'i').replace(/ı/g,'i').replace(/[.,!?;:'"()\-]/g,'').trim();}
+function getTime(){const d=new Date();return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');}
+function addBubble(t,type,cls='',fb=''){const r=document.createElement('div');r.className=`msg-row ${type}`;r.innerHTML=`<div class="bubble ${cls}">${t}<span class="time">${getTime()}</span>${fb}</div>`;chatArea.appendChild(r);chatArea.scrollTop=chatArea.scrollHeight;}
+function addSystem(t){const r=document.createElement('div');r.className='system-msg';r.innerHTML=`<span>${t}</span>`;chatArea.appendChild(r);chatArea.scrollTop=chatArea.scrollHeight;}
+function updateScore(){document.getElementById('sCorrect').textContent=correct;document.getElementById('sWrong').textContent=wrong;document.getElementById('sRemain').textContent=queue.length;}
+function checkAnswer(u,c){const nu=normalize(u);if(!nu)return false;return c.split('/').map(a=>normalize(a)).some(a=>a&&nu===a);}
+function askNext(){if(!queue.length){showResult();return;}current=queue.shift();if(mode==='mix')currentDir=Math.random()<0.5?'tr2en':'en2tr';else currentDir=mode;updateKeyboardForDirection();const q=currentDir==='tr2en'?current.tr:current.en,f=currentDir==='tr2en'?'🇹🇷':'🇬🇧';setTimeout(()=>addBubble(`${f} <strong>${q}</strong>`,'incoming'),400);}
+function submitAnswer(){const a=inputText.trim();if(!a||!current)return;inputText='';updateInputDisplay();total++;const exp=currentDir==='tr2en'?current.en:current.tr,ok=checkAnswer(a,exp);if(ok){correct++;correctList.push({question:currentDir==='tr2en'?current.tr:current.en,answer:exp,userAns:a,dir:currentDir});addBubble(a,'outgoing','correct-answer','<div class="feedback correct">✓ Doğru!</div>');}else{wrong++;wrongList.push({question:currentDir==='tr2en'?current.tr:current.en,answer:exp,userAns:a,dir:currentDir});addBubble(a,'outgoing','wrong-answer',`<div class="feedback wrong">✗ Doğru cevap: <strong>${exp}</strong></div>`);}updateScore();setTimeout(()=>askNext(),800);}
+function startGame(m){mode=m;correct=0;wrong=0;total=0;correctList=[];wrongList=[];queue=shuffle([...WORDS]);chatArea.innerHTML='';inputText='';updateInputDisplay();updateScore();const mn={tr2en:'Türkçe → İngilizce',en2tr:'İngilizce → Türkçe',mix:'Karışık'};const info=selectedName?mn[mode]+' • '+selectedName+' ('+WORDS.length+')':mn[mode]+' • '+WORDS.length+' kelime';document.getElementById('headerSub').textContent=info;['uploadScreen','modeScreen','resultScreen','reviewScreen','starredScreen'].forEach(id=>document.getElementById(id).classList.add('hidden'));addSystem(`${mn[mode]} modu başladı! 🚀`);setTimeout(()=>askNext(),600);}
+function showResult(){const p=total>0?Math.round((correct/total)*100):0;document.getElementById('rCorrect').textContent=correct;document.getElementById('rWrong').textContent=wrong;document.getElementById('rPercent').textContent=p+'%';let e='🎉',t='Harika!';if(p<50){e='💪';t='Tekrar dene!';}else if(p<75){e='👍';t='İyi gidiyorsun!';}else if(p<90){e='🔥';t='Çok iyi!';}document.getElementById('resultEmoji').textContent=e;document.getElementById('resultTitle').textContent=t;document.getElementById('resultScreen').classList.remove('hidden');const rb=document.getElementById('retryWrongBtn');if(wrongList.length>0){rb.classList.remove('hidden');rb.textContent='🔄 Yanlışları Tekrar Oyna ('+wrongList.length+')';}else rb.classList.add('hidden');}
+function restartGame(){startGame(mode);}
+function retryWrongWords(){const rw=wrongList.map(item=>WORDS.find(w=>(item.dir==='tr2en'?w.tr:w.en)===item.question)).filter(Boolean);const u=[...new Map(rw.map(w=>[w.en+w.tr,w])).values()];if(!u.length)return;correct=0;wrong=0;total=0;correctList=[];wrongList=[];queue=shuffle([...u]);chatArea.innerHTML='';inputText='';updateInputDisplay();updateScore();document.getElementById('headerSub').textContent='🔄 Yanlışlar • '+u.length+' kelime';['uploadScreen','modeScreen','resultScreen','reviewScreen','starredScreen'].forEach(id=>document.getElementById(id).classList.add('hidden'));addSystem(`🔄 Yanlışları tekrar! ${u.length} kelime`);setTimeout(()=>askNext(),600);}
+
+// REVIEW
+let currentTab='wrong';
+function showReview(){document.getElementById('resultScreen').classList.add('hidden');document.getElementById('reviewScreen').classList.remove('hidden');document.getElementById('tabWrongCount').textContent=wrongList.length;document.getElementById('tabCorrectCount').textContent=correctList.length;switchTab('wrong');}
+function hideReview(){document.getElementById('reviewScreen').classList.add('hidden');document.getElementById('resultScreen').classList.remove('hidden');}
+function switchTab(tab){currentTab=tab;document.getElementById('tabWrong').classList.toggle('active',tab==='wrong');document.getElementById('tabCorrect').classList.toggle('active',tab==='correct');const list=document.getElementById('reviewList'),items=tab==='wrong'?wrongList:correctList;if(!items.length){list.innerHTML=`<div class="review-empty">${tab==='wrong'?'🎉 Hiç yanlışın yok!':'Henüz doğru cevap yok'}</div>`;return;}list.innerHTML=items.map((item,i)=>{const cls=tab==='correct'?'review-item correct-item':'review-item';const flag=item.dir==='tr2en'?'🇹🇷→🇬🇧':'🇬🇧→🇹🇷';const en=item.dir==='tr2en'?item.answer:item.question;const tr=item.dir==='tr2en'?item.question:item.answer;const starred=isStarred({en,tr});const ee=en.replace(/'/g,"\\'"),et=tr.replace(/'/g,"\\'");let h=`<div class="${cls}"><button class="star-btn" id="star_${tab}_${i}" onclick="onStarClick('${ee}','${et}','${tab}',${i})">${starred?'⭐':'☆'}</button><div class="ri-content"><div class="ri-question">${flag} ${item.question}</div><div class="ri-answer">✓ ${item.answer}</div>`;if(tab==='wrong')h+=`<div class="ri-user">✗ Senin cevabın: ${item.userAns}</div>`;return h+`</div></div>`;}).join('');}
+function onStarClick(en,tr,tab,i){const s=toggleStar(en,tr);const btn=document.getElementById(`star_${tab}_${i}`);if(btn)btn.textContent=s?'⭐':'☆';}
+
+// INIT
+renderSavedLists();updateStarredBtn();
+
+// PHYSICAL KEYBOARD
+document.addEventListener('keydown',function(e){if(e.target.tagName==='TEXTAREA'||e.target.tagName==='INPUT')return;const ov=['uploadScreen','modeScreen','resultScreen','reviewScreen','starredScreen'];for(const id of ov)if(!document.getElementById(id).classList.contains('hidden'))return;if(e.key==='Enter'){e.preventDefault();submitAnswer();}else if(e.key==='Backspace'){e.preventDefault();doBackspace();}else if(e.key===' '){e.preventDefault();typeChar(' ');}else if(e.key.length===1){e.preventDefault();typeChar(e.key);}});
+</script>
+</body>
+</html>
